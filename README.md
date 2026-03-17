@@ -116,6 +116,61 @@ promptenhance init
 
 This is the zero-manual setup flow for any project. It auto-runs plugin installation.
 
+## ✅ After `promptenhance init`
+
+After you run:
+
+```bash
+promptenhance init
+```
+
+what to expect:
+- `promptenhance` plugin files are detected as a Claude plugin
+- `UserPromptSubmit` hook is wired to:
+  - `python3 .claude-plugin/hooks/user-prompt-submit/enhance.py`
+- future prompts start running through the enhancer automatically
+
+You can test quickly with:
+
+```bash
+printf '{"prompt":"fix it"}' | python3 .claude-plugin/hooks/user-prompt-submit/enhance.py
+```
+
+If enhancement is needed, output includes `additionalContext`.
+If not needed, hook output stays pass-through.
+
+## 🛠️ Troubleshooting
+
+- **`command not found: promptenhance`**
+  - Reinstall:
+    ```bash
+    npm install -g promptenhance
+    ```
+  - Then open a fresh terminal window/tab.
+
+- **`promptenhance init` fails with plugin install errors**
+  - Ensure `claude` CLI is installed and on PATH.
+  - Retry with force:
+    ```bash
+    promptenhance init --force
+    ```
+
+- **Nothing happens after init**
+  - Verify your current directory is the project root.
+  - Re-run:
+    ```bash
+    promptenhance init
+    ```
+  - Then restart Claude Code and try a short prompt like:
+    `fix it`
+
+- **Hook still doesn’t run**
+  - Run verify checks:
+    ```bash
+    promptenhance verify
+    ```
+  - Ensure `.claude-plugin/hooks/user-prompt-submit/enhance.py` exists in the project.
+
 ## 🧠 How it works
 
 1. Hook receives user prompt on `UserPromptSubmit`
