@@ -30,6 +30,16 @@ def _read_json(path: Path) -> Dict[str, Any]:
     return {}
 
 
+def _to_bool(value: Any, default: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().lower() not in {"0", "false", "no", "off"}
+    return default
+
+
 def load_config(root: Path) -> Dict[str, Any]:
     cfg: Dict[str, Any] = {
         "enabled": True,
@@ -38,27 +48,30 @@ def load_config(root: Path) -> Dict[str, Any]:
         "anthropic_model": "claude-3-5-haiku-latest",
         "anthropic_max_tokens": 350,
         "log_path": str(Path.home() / ".claude" / "promptenhance.log"),
-        "show_visual": True,
-        "visual_label": "🧠 [promptenhance — ENHANCED]",
+        "promptenhance_show_marker": True,
+        "promptenhance_show_diff": False,
     }
     cfg.update(_read_json(Path.home() / ".claude" / "promptenhance.json"))
     cfg.update(_read_json(root / ".claude" / "promptenhance.json"))
 
     if os.getenv("PROMPTENHANCE_ENABLED") is not None:
-        cfg["enabled"] = os.getenv("PROMPTENHANCE_ENABLED", "1").lower() not in {"0", "false", "no"}
+        cfg["enabled"] = _to_bool(os.getenv("PROMPTENHANCE_ENABLED", "1"), True)
     if os.getenv("PROMPTENHANCE_ANTHROPIC_ENABLED") is not None:
-        cfg["anthropic_enabled"] = os.getenv("PROMPTENHANCE_ANTHROPIC_ENABLED", "0").lower() in {"1", "true", "yes"}
-    if os.getenv("PROMPTENHANCE_VISUAL") is not None:
-        cfg["show_visual"] = os.getenv("PROMPTENHANCE_VISUAL", "1").lower() not in {"0", "false", "no"}
-
-    if os.getenv("PROMPTENHANCE_VISUAL_LABEL") is not None:
-        cfg["visual_label"] = os.getenv("PROMPTENHANCE_VISUAL_LABEL")
-
+        cfg["anthropic_enabled"] = _to_bool(os.getenv("PROMPTENHANCE_ANTHROPIC_ENABLED", "0"), False)
     if os.getenv("PROMPTENHANCE_MAX_CONTEXT_CHARS"):
         try:
             cfg["max_context_chars"] = int(os.getenv("PROMPTENHANCE_MAX_CONTEXT_CHARS", "12000"))
         except ValueError:
             pass
+    if os.getenv("PROMPTENHANCE_SHOW_MARKER") is not None:
+        cfg["promptenhance_show_marker"] = _to_bool(os.getenv("PROMPTENHANCE_SHOW_MARKER", "1"), True)
+    if os.getenv("PROMPTENHANCE_SHOW_DIFF") is not None:
+        cfg["promptenhance_show_diff"] = _to_bool(os.getenv("PROMPTENHANCE_SHOW_DIFF", "0"), False)
+
+    # backward compatibility for previous unreleased options
+    if "show_visual" in cfg:
+        cfg["promptenhance_show_marker"] = _to_bool(cfg.get("show_visual"), cfg.get("promptenhance_show_marker", True))
+
     return cfg
 
 

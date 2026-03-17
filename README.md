@@ -152,13 +152,10 @@ If not needed, hook output stays pass-through.
 
 ## 🧠 Visual confirmation inside Claude Code
 
-- Every enhanced run now includes a visible visual marker at the top of `additionalContext`:
-  - `🧠 [promptenhance — ENHANCED]`
-  - Trigger reason (`short_ambiguous`, `generic_short`, etc.)
-  - The original prompt preview
-- Toggle this with config:
-  - `show_visual`: true/false
-  - `visual_label`: custom label string
+- Enhanced prompt paths include a visual marker in `additionalContext`.
+- Optional config:
+  - `promptenhance_show_marker` (default: `true`) — prepend a marker so you can see when enhancement ran.
+  - `promptenhance_show_diff` (default: `false`) — add a compact diff-style hint in-context.
 
 You can also check the latest run status directly:
 
@@ -222,19 +219,18 @@ promptenhance status --tail 40
   "anthropic_enabled": false,
   "anthropic_model": "claude-3-5-haiku-latest",
   "anthropic_max_tokens": 350,
-  "show_visual": true,
-  "visual_label": "🧠 [promptenhance — ENHANCED]"
+  "promptenhance_show_marker": true,
+  "promptenhance_show_diff": false
 }
 ```
 
 Supported env overrides:
 
 - `PROMPTENHANCE_ENABLED`
-- `PROMPTENHANCE_ENABLED`
 - `PROMPTENHANCE_ANTHROPIC_ENABLED`
 - `PROMPTENHANCE_MAX_CONTEXT_CHARS`
-- `PROMPTENHANCE_VISUAL`
-- `PROMPTENHANCE_VISUAL_LABEL`
+- `PROMPTENHANCE_SHOW_MARKER`
+- `PROMPTENHANCE_SHOW_DIFF`
 
 ---
 
