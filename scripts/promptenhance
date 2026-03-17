@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+echo_info() { printf "[promptenhance] %s\n" "$*"; }
+echo_err() { printf "[promptenhance] ERROR: %s\n" "$*" >&2; }
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  promptenhance init [--force]
+  promptenhance verify
+  promptenhance help
+
+Commands:
+  init    Install/initialize promptenhance in the current project as a Claude plugin.
+  verify  Run hook verification (same as make verify).
+  help    Show this help.
+USAGE
+}
+
+has_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+cmd_init() {
+  local force="${1:-}"
+  if [[ "${force:-}" == "--force" ]]; then
+    FORCE=1
+  else
+    FORCE=0
+  fi
+
+  if ! has_cmd claude; then
+    echo_err "`claude` command not found in PATH. Please install Claude Code first."
+    exit 1
+  fi
+
+  if [[ -f "$ROOT/plugin.json" ]]; then
+    echo_info "Running claude plugin install ."
+    if (cd "$ROOT" && claude plugin install .); then
+      echo_info "promptenhance initialized successfully in: $ROOT"
+      echo_info "Next: start a Claude session and type normal prompts."
+      return 0
+    fi
+  else
+    echo_err "plugin.json not found in $ROOT"
+    echo_err "Run this command from the promptenhance repo root or from a project containing plugin.json"
+    exit 1
+  fi
+
+  if (( FORCE )); then
+    echo_info "Retrying with --force to override any existing plugin binding..."
+    (cd "$ROOT" && claude plugin install . --force)
+    return 0
+  fi
+
+  echo_err "Initialization failed. Re-run with --force if needed: promptenhance init --force"
+  return 1
+}
+
+cmd_verify() {
+  if has_cmd make; then
+    (cd "$ROOT" && make verify)
+    return $?
+  fi
+
+  bash "$ROOT/scripts/verify_promptenhance.sh"
+}
+
+case "${1-}" in
+  init)
+    shift
+    cmd_init "${1-}"
+    ;;
+  verify)
+    cmd_verify
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  "")
+    usage
+    ;;
+  *)
+    echo_err "unknown command: ${1}"
+    usage
+    exit 1
+    ;;
+esac

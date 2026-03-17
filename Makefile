@@ -25,8 +25,11 @@ clean:
 	@echo "cleaned"
 
 install:
-	@echo "To install locally, run:"
-	@echo "claude plugin install ."
+	@echo "To install globally, run:"
+	@echo "npm install -g ."
+	@echo "Then run:"
+	@echo "promptenhance init"
+	@echo "(or run from this folder: promptenhance init)"
 
 help:
 	@echo "promptenhance Makefile targets:"

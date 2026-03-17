@@ -65,7 +65,8 @@ npm install -g promptenhance
 ```bash
 git clone https://github.com/itisrmk/promptenhance.git
 cd promptenhance
-claude plugin install .
+npm install -g .
+promptenhance init
 ```
 
 ### Install as part of this workspace
@@ -74,19 +75,28 @@ claude plugin install .
 # from within this repo folder
 cd promptenhance
 npm install -g .
+promptenhance init
 ```
 
 ---
 
 ## ⚡ Quick start
 
-1. Install `promptenhance` (npm or local install)
-2. Configure in Claude Code plugin path (`promptenhance` plugin entry uses:
-   `python3 .claude-plugin/hooks/user-prompt-submit/enhance.py`)
+1. Install `promptenhance`:
+   ```bash
+   npm install -g promptenhance
+   ```
+2. Initialize in your project folder:
+   ```bash
+   cd /path/to/your-project
+   promptenhance init
+   ```
 3. Optionally add config files:
    - `~/.claude/promptenhance.json`
    - `<project>/.claude/promptenhance.json`
 4. Start prompting as usual.
+
+You can always run `promptenhance init` again in the same folder to reinitialize.
 
 ### Example short prompt (auto-enhanced)
 
@@ -97,6 +107,14 @@ fix it
 If this is ambiguous, the plugin enriches it with project context before sending to Claude.
 
 ---
+
+## 🧰 Usage command
+
+```bash
+promptenhance init
+```
+
+This is the zero-manual setup flow for any project. It auto-runs plugin installation.
 
 ## 🧠 How it works
 

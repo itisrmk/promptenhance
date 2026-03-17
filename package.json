@@ -21,6 +21,7 @@
   ],
   "type": "commonjs",
   "bin": {
+    "promptenhance": "./scripts/promptenhance",
     "promptenhance-verify": "./scripts/verify_promptenhance.sh",
     "promptenhance-install": "./scripts/install_promptenhance.sh"
   },
