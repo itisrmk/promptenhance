@@ -8,6 +8,9 @@
 
 **promptenhance** is a **Claude Code plugin** that makes everyday prompts smarter.
 
+**Repository:** https://github.com/itisrmk/promptenhance  
+**Description:** Fail-safe, context-aware `UserPromptSubmit` plugin for Claude Code. It enriches ambiguous prompts with lightweight project context.
+
 Most prompts are clear enough as-is, but short/ambiguous prompts often need quick context to get precise results. `promptenhance` sits on `UserPromptSubmit`, auto-injects concise project context, and keeps your flow safe and non-disruptive.
 
 ---
