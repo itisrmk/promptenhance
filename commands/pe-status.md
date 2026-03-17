@@ -11,7 +11,10 @@ Shows PromptEnhance runtime status in this project.
    - `.claude/promptenhance.json`
    - environment overrides (`PROMPTENHANCE_*`)
 4. Log file: `~/.claude/promptenhance.log` (best effort)
-5. Prefix modes:
+5. Marker/diff config:
+   - `promptenhance_show_marker`
+   - `promptenhance_show_diff`
+6. Prefix modes:
    - `*` bypass enhancement
    - `!` force enhancement
 

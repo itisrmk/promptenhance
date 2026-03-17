@@ -21,7 +21,7 @@ Commands:
          Works in empty directories by bootstrapping required plugin files.
          PATH defaults to current directory and can be any target project folder.
   verify  Run hook verification (same as make verify). PATH defaults to current dir.
-  status  Show recent local promptenhance hook run log entries.
+  status  Show recent local promptenhance status and config.
   help    Show this help.
 USAGE
 }
@@ -159,7 +159,7 @@ cmd_status() {
         shift 2
         ;;
       --help|-h)
-        echo "Usage: promptenhance status [--tail N]"
+        echo "Usage: promptenhance status [PATH] [--tail N]"
         return 0
         ;;
       *)
@@ -174,11 +174,78 @@ cmd_status() {
     esac
   done
 
-  local log_path
-  log_path="$target/.claude/promptenhance.log"
-  if [[ ! -f "$target/.claude/promptenhance.json" ]]; then
-    log_path="$HOME/.claude/promptenhance.log"
+  echo_info "PromptEnhance status for: $target"
+
+  local plugin_file="$target/plugin.json"
+  local hook_file="$target/.claude-plugin/hooks/user-prompt-submit/enhance.py"
+
+  if [[ -f "$plugin_file" ]]; then
+    echo_info "plugin.json: present"
+  else
+    echo_warn "plugin.json: missing"
   fi
+
+  if [[ -f "$hook_file" ]]; then
+    echo_info "hook: present ($hook_file)"
+  else
+    echo_warn "hook: missing ($hook_file)"
+  fi
+
+  local cfg_text
+  local cfg_lines
+  cfg_text="$(python3 - "$HOME/.claude/promptenhance.json" "$target/.claude/promptenhance.json" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+
+def read_cfg(path):
+    try:
+        p = Path(path)
+        if p.exists() and p.is_file():
+            data = json.loads(p.read_text(encoding='utf-8', errors='ignore'))
+            if isinstance(data, dict):
+                return data
+    except Exception:
+        pass
+    return {}
+
+
+def to_bool(value, default=False):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().lower() not in {"0", "false", "no", "off"}
+    return default
+
+home_cfg = read_cfg(sys.argv[1])
+proj_cfg = read_cfg(sys.argv[2])
+cfg = {
+    "promptenhance_show_marker": True,
+    "promptenhance_show_diff": False,
+    "log_path": str(Path.home() / ".claude" / "promptenhance.log"),
+}
+cfg.update(home_cfg)
+cfg.update(proj_cfg)
+
+print('true' if to_bool(cfg.get("promptenhance_show_marker", True), True) else 'false')
+print('true' if to_bool(cfg.get("promptenhance_show_diff", False), False) else 'false')
+print(cfg.get('log_path', str(Path.home() / '.claude' / 'promptenhance.log')))
+PY
+)"
+
+  IFS=$'\n' read -r -a cfg_lines <<< "$cfg_text"
+
+  local marker=${cfg_lines[0]:-true}
+  local diff=${cfg_lines[1]:-false}
+  local log_path=${cfg_lines[2]:-$HOME/.claude/promptenhance.log}
+
+  echo_info "promptenhance_show_marker: ${marker}"
+  echo_info "promptenhance_show_diff: ${diff}"
+  echo_info "Resolved log_path: ${log_path}"
+
   if [[ ! -f "$log_path" ]]; then
     echo_warn "No promptenhance log file found at: $log_path"
     return 0
@@ -187,7 +254,6 @@ cmd_status() {
   echo_info "Recent promptenhance events (tail -n $tail_n):"
   tail -n "$tail_n" "$log_path"
 }
-
 
 cmd_verify() {
   local target="${1:-$PWD}"
