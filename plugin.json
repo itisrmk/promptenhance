@@ -1,0 +1,21 @@
+{
+  "name": "promptenhance",
+  "version": "0.1.0",
+  "description": "Context-aware prompt enhancement for Claude Code. Type intent, get precision.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude-plugin/hooks/user-prompt-submit/enhance.py"
+          }
+        ]
+      }
+    ]
+  },
+  "skills": [
+    "./skills/prompt-enhance"
+  ]
+}

@@ -1,0 +1,6 @@
+**/__pycache__/
+**/*.pyc
+.claude-plugin/hooks/.pe_cache/
+*.tgz
+node_modules/
+.npmrc

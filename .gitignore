@@ -1,0 +1,7 @@
+node_modules/
+.npmrc
+*.tgz
+.DS_Store
+**/__pycache__/
+**/*.pyc
+.claude-plugin/hooks/.pe_cache/
