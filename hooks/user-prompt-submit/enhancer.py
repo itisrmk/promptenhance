@@ -5,6 +5,11 @@ import os
 from typing import Any, Dict, Optional
 
 PROMPTENHANCE_MARKER_TEXT = "🧠 [promptenhance — ENHANCED]"
+PROMPTENHANCE_VISUAL_CARD = """╭─ promptenhance ─────────────────────────────
+│ status: {status}
+│ reason: {reason}
+│ prompt: {prompt}
+╰──────────────────────────────────────────────"""
 
 
 def _to_bool(value: Any, default: bool = False) -> bool:
@@ -29,17 +34,11 @@ def _format_visual_marker(cfg: Dict[str, Any], reason: Optional[str], prompt: st
     if not show_marker:
         return ""
 
-    return "\n".join(
-        [
-            PROMPTENHANCE_MARKER_TEXT,
-            f"result: enhanced",
-            f"reason: {reason or 'auto'}",
-            f"prompt: {_truncate(prompt)}",
-            "",
-        ]
+    return PROMPTENHANCE_VISUAL_CARD.format(
+        status="ENHANCED",
+        reason=reason or "auto",
+        prompt=_truncate(prompt),
     )
-
-
 def _format_diff_block(cfg: Dict[str, Any], reason: Optional[str], prompt: str, context_text: str) -> str:
     if not _to_bool(cfg.get("promptenhance_show_diff"), False):
         return ""

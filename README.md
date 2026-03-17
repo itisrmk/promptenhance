@@ -152,7 +152,15 @@ If not needed, hook output stays pass-through.
 
 ## 🧠 Visual confirmation inside Claude Code
 
-- Enhanced prompt paths include a visual marker in `additionalContext`.
+- Enhanced prompt paths include a Claude-flow-style visual card in `additionalContext` (if enabled):
+
+  ```text
+  ╭─ promptenhance ─────────────────────────────
+  │ status: ENHANCED
+  │ reason: short_ambiguous
+  │ prompt: fix it
+  ╰──────────────────────────────────────────────
+  ```
 - Optional config:
   - `promptenhance_show_marker` (default: `true`) — prepend a marker so you can see when enhancement ran.
   - `promptenhance_show_diff` (default: `false`) — add a compact diff-style hint in-context.
