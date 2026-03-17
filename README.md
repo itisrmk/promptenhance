@@ -181,8 +181,15 @@ promptenhance status --tail 40
   - If you run it from `/opt/homebrew` by mistake, it'll still copy into that path only.
 
 - **`claude plugin install` fails during init**
-  - In some Claude CLI builds, local path install is not supported yet.
-  - That's expected: the scaffold is still prepared in your folder and ready to use.
+  - This usually means your installed Claude CLI doesn't yet support local project-plugin install by path.
+  - The scaffold is still prepared in your folder and ready to use.
+  - Also note: in this case the plugin may not appear under `~/.claude/plugins` even though it works when invoked from the project.
+  - Verify end-to-end with:
+    ```bash
+    promptenhance status
+    promptenhance verify
+    printf '{"prompt":"fix it"}' | python3 .claude-plugin/hooks/user-prompt-submit/enhance.py
+    ```
 
 - **Nothing happens after init**
   - Verify your current directory is the project root.

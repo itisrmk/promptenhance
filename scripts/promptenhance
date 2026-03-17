@@ -13,7 +13,7 @@ usage() {
 Usage:
   promptenhance init [PATH] [--force]
   promptenhance verify [PATH]
-  promptenhance status [--tail N]
+  promptenhance status [PATH] [--tail N]
   promptenhance help
 
 Commands:
@@ -21,7 +21,7 @@ Commands:
          Works in empty directories by bootstrapping required plugin files.
          PATH defaults to current directory and can be any target project folder.
   verify  Run hook verification (same as make verify). PATH defaults to current dir.
-  status  Show recent local promptenhance status and config.
+  status  Show recent local promptenhance status and config for this project.
   help    Show this help.
 USAGE
 }
@@ -96,8 +96,14 @@ attempt_local_install() {
   fi
 
   if echo "$out" | grep -qi "not found in any configured marketplace"; then
-    echo_warn "This Claude CLI does not support local plugin install from path."
+    echo_warn "This Claude CLI does not support local plugin install from a local path."
     echo_warn "Scaffold is in place and ready for this project."
+    echo_warn "Note: the plugin may not appear under ~/.claude/plugins on some CLI versions, while still working locally."
+    echo_warn ""
+    echo_warn "Verify setup with these commands in the project folder:"
+    echo_warn "  1) promptenhance status   # check plugin.json + hook file presence"
+    echo_warn "  2) promptenhance verify   # validate hook JSON contract locally"
+    echo_warn "  3) printf '{\"prompt\":\"fix it\"}' | python3 .claude-plugin/hooks/user-prompt-submit/enhance.py"
     return 0
   fi
 
@@ -143,8 +149,9 @@ cmd_init() {
   attempt_local_install "$target" || true
 
   echo_info "promptenhance is ready in: $target"
-  echo_info "Use this command in the same folder whenever needed:"
-  echo_info "  claude plugin list" 
+  echo_info "Use these commands in the same folder:"
+  echo_info "  promptenhance status    # verify plugin.json + hook presence and config"
+  echo_info "  promptenhance verify    # validate hook execution path"
   echo_info "Then start a Claude session and prompt normally."
 }
 
@@ -251,8 +258,12 @@ PY
     return 0
   fi
 
+  local cli_plugin_path="$HOME/.claude/plugins"
+
   echo_info "Recent promptenhance events (tail -n $tail_n):"
   tail -n "$tail_n" "$log_path"
+
+  echo_info "Note: If plugin is local and this Claude CLI does not support project-scoped install, it may not show in $cli_plugin_path."
 }
 
 cmd_verify() {
