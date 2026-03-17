@@ -106,6 +106,14 @@ fix it
 
 If this is ambiguous, the plugin enriches it with project context before sending to Claude.
 
+You can also initialize any directory (even empty) directly:
+
+```bash
+cd /path/to/your-new-project  # or any empty folder
+promptenhance init
+```
+
+
 ---
 
 ## 🧰 Usage command
@@ -114,7 +122,10 @@ If this is ambiguous, the plugin enriches it with project context before sending
 promptenhance init
 ```
 
-This is the zero-manual setup flow for any project. It auto-runs plugin installation.
+This is the zero-manual setup flow for any project. It will:
+- create scaffold files if missing (`plugin.json`, `.claude-plugin/...`),
+- attempt to register locally with your installed Claude CLI,
+- and otherwise leave the project ready with promptenhance files.
 
 ## ✅ After `promptenhance init`
 
@@ -148,12 +159,16 @@ If not needed, hook output stays pass-through.
     ```
   - Then open a fresh terminal window/tab.
 
-- **`promptenhance init` fails with plugin install errors**
-  - Ensure `claude` CLI is installed and on PATH.
-  - Retry with force:
+- **`promptenhance init` run from the wrong folder**
+  - This command is target-folder aware. Run it in your project folder (or pass path explicitly):
     ```bash
-    promptenhance init --force
+    promptenhance init /path/to/your-project
     ```
+  - If you run it from `/opt/homebrew` by mistake, it'll still copy into that path only.
+
+- **`claude plugin install` fails during init**
+  - In some Claude CLI builds, local path install is not supported yet.
+  - That's expected: the scaffold is still prepared in your folder and ready to use.
 
 - **Nothing happens after init**
   - Verify your current directory is the project root.

@@ -1,21 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_PATH="$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$(command -v "$0")")"
+PACKAGE_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
 
 echo_info() { printf "[promptenhance] %s\n" "$*"; }
+echo_warn() { printf "[promptenhance] WARNING: %s\n" "$*"; }
 echo_err() { printf "[promptenhance] ERROR: %s\n" "$*" >&2; }
 
 usage() {
   cat <<'USAGE'
 Usage:
-  promptenhance init [--force]
-  promptenhance verify
+  promptenhance init [PATH] [--force]
+  promptenhance verify [PATH]
   promptenhance help
 
 Commands:
-  init    Install/initialize promptenhance in the current project as a Claude plugin.
-  verify  Run hook verification (same as make verify).
+  init    Initialize promptenhance in PATH (default: current directory).
+         Works in empty directories by bootstrapping required plugin files.
+         PATH defaults to current directory and can be any target project folder.
+  verify  Run hook verification (same as make verify). PATH defaults to current dir.
   help    Show this help.
 USAGE
 }
@@ -24,58 +28,141 @@ has_cmd() {
   command -v "$1" >/dev/null 2>&1
 }
 
-cmd_init() {
-  local force="${1:-}"
-  if [[ "${force:-}" == "--force" ]]; then
-    FORCE=1
-  else
-    FORCE=0
+copy_with_policy() {
+  local src="$1"
+  local dst="$2"
+  local force="$3"  # 1 = overwrite, 0 = keep existing
+
+  python3 - "$src" "$dst" "$force" <<'PY'
+from pathlib import Path
+import shutil
+import sys
+
+src = Path(sys.argv[1])
+dst = Path(sys.argv[2])
+force = sys.argv[3] == "1"
+
+if not src.exists():
+    raise SystemExit(f"expected source missing: {src}")
+
+
+def sync_tree(current_src: Path, current_dst: Path) -> None:
+    if current_src.is_dir():
+        current_dst.mkdir(parents=True, exist_ok=True)
+        for child in sorted(current_src.iterdir()):
+            sync_tree(child, current_dst / child.name)
+    else:
+        if current_dst.exists() and not force:
+            return
+        current_dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(current_src, current_dst)
+
+sync_tree(src, dst)
+PY
+}
+
+copy_scaffold() {
+  local target="$1"
+  local force="$2"
+
+  mkdir -p "$target"
+
+  copy_with_policy "$PACKAGE_ROOT/plugin.json" "$target/plugin.json" "$force"
+  copy_with_policy "$PACKAGE_ROOT/.claude-plugin" "$target/.claude-plugin" "$force"
+
+  if [[ -d "$PACKAGE_ROOT/commands" ]]; then
+    copy_with_policy "$PACKAGE_ROOT/commands" "$target/commands" "$force"
   fi
+  if [[ -d "$PACKAGE_ROOT/skills" ]]; then
+    copy_with_policy "$PACKAGE_ROOT/skills" "$target/skills" "$force"
+  fi
+}
+
+attempt_local_install() {
+  local target="$1"
 
   if ! has_cmd claude; then
-    echo_err "`claude` command not found in PATH. Please install Claude Code first."
-    exit 1
-  fi
-
-  if [[ -f "$ROOT/plugin.json" ]]; then
-    echo_info "Running claude plugin install ."
-    if (cd "$ROOT" && claude plugin install .); then
-      echo_info "promptenhance initialized successfully in: $ROOT"
-      echo_info "Next: start a Claude session and type normal prompts."
-      return 0
-    fi
-  else
-    echo_err "plugin.json not found in $ROOT"
-    echo_err "Run this command from the promptenhance repo root or from a project containing plugin.json"
-    exit 1
-  fi
-
-  if (( FORCE )); then
-    echo_info "Retrying with --force to override any existing plugin binding..."
-    (cd "$ROOT" && claude plugin install . --force)
+    echo_warn "Claude CLI not found. Scaffold prepared; install/setup Claude CLI to activate hooks."
     return 0
   fi
 
-  echo_err "Initialization failed. Re-run with --force if needed: promptenhance init --force"
+  local out
+  if out=$(cd "$target" && claude plugin install . --scope project 2>&1); then
+    echo_info "$out"
+    echo_info "Project plugin installation command completed."
+    return 0
+  fi
+
+  if echo "$out" | grep -qi "not found in any configured marketplace"; then
+    echo_warn "This Claude CLI does not support local plugin install from path."
+    echo_warn "Scaffold is in place and ready for this project."
+    return 0
+  fi
+
+  echo_err "claude plugin install failed. output:"
+  echo "$out" >&2
   return 1
 }
 
-cmd_verify() {
-  if has_cmd make; then
-    (cd "$ROOT" && make verify)
-    return $?
+cmd_init() {
+  local target="${PWD}"
+  local force=0
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --force)
+        force=1
+        shift
+        ;;
+      --help|-h)
+        usage
+        return 0
+        ;;
+      *)
+        target="$1"
+        shift
+        ;;
+    esac
+  done
+
+  if [[ ! -d "$target" ]]; then
+    mkdir -p "$target"
   fi
 
-  bash "$ROOT/scripts/verify_promptenhance.sh"
+  echo_info "Preparing promptenhance scaffold in: $target"
+  copy_scaffold "$target" "$force"
+
+  local entry_file="$target/.claude-plugin/hooks/user-prompt-submit/enhance.py"
+  if [[ ! -f "$entry_file" ]]; then
+    echo_err "Scaffold copy incomplete. Missing expected file: $entry_file"
+    return 1
+  fi
+
+  attempt_local_install "$target" || true
+
+  echo_info "promptenhance is ready in: $target"
+  echo_info "Use this command in the same folder whenever needed:"
+  echo_info "  claude plugin list" 
+  echo_info "Then start a Claude session and prompt normally."
+}
+
+cmd_verify() {
+  local target="${1:-$PWD}"
+  if [[ -f "$target/Makefile" ]] && has_cmd make; then
+    (cd "$target" && make verify)
+    return $?
+  fi
+  bash "$PACKAGE_ROOT/scripts/verify_promptenhance.sh"
 }
 
 case "${1-}" in
   init)
     shift
-    cmd_init "${1-}"
+    cmd_init "$@"
     ;;
   verify)
-    cmd_verify
+    shift
+    cmd_verify "$@"
     ;;
   help|--help|-h)
     usage

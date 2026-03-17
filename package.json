@@ -1,6 +1,6 @@
 {
   "name": "promptenhance",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Context-aware prompt enhancement hooks for Claude Code UserPromptSubmit.",
   "license": "MIT",
   "author": "Rahul Kashyap",
