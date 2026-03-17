@@ -1,6 +1,6 @@
-**/__pycache__/
-**/*.pyc
-.claude-plugin/hooks/.pe_cache/
-*.tgz
-node_modules/
-.npmrc
+__pycache__/
+*.pyc
+npm-debug.log*
+.DS_Store
+.git
+.gitignore

@@ -1,16 +1,16 @@
 {
   "name": "promptenhance",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Context-aware prompt enhancement hooks for Claude Code UserPromptSubmit.",
   "license": "MIT",
   "author": "Rahul Kashyap",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rahulkashyap/promptenhance.git"
+    "url": "git+https://github.com/itisrmk/promptenhance.git"
   },
-  "homepage": "https://github.com/rahulkashyap/promptenhance#readme",
+  "homepage": "https://github.com/itisrmk/promptenhance#readme",
   "bugs": {
-    "url": "https://github.com/rahulkashyap/promptenhance/issues"
+    "url": "https://github.com/itisrmk/promptenhance/issues"
   },
   "keywords": [
     "claude-code",
@@ -28,7 +28,7 @@
     "verify": "bash ./scripts/verify_promptenhance.sh",
     "lint": "npm run verify",
     "clean": "find . -name '__pycache__' -type d -prune -exec rm -rf {} + && find . -name '*.pyc' -type f -delete",
-    "prepublishOnly": "npm run verify"
+    "prepublishOnly": "npm run verify && npm run clean"
   },
   "files": [
     "plugin.json",
