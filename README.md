@@ -188,9 +188,32 @@ make help
 
 ---
 
+## 📸 Screenshot / Demo
+
+### About this view
+
+<!-- Replace the placeholder below with your preferred screenshot/gif -->
+![promptenhance demo](./assets/promptenhance-demo.png)
+
+If you already captured this screenshot:
+
+```bash
+cp '/var/folders/v1/nt11424d20gc2jdmpzglj9tm0000gn/T/TemporaryItems/NSIRD_screencaptureui_4G76hU/Screenshot 2026-03-16 at 9.49.07 PM.png' ./assets/promptenhance-demo.png
+```
+
+### Example smoke demo
+
+```bash
+printf '{"prompt":"fix it"}' | python3 .claude-plugin/hooks/user-prompt-submit/enhance.py
+```
+
+---
+
 ## 📬 Links
 
 - **npm**: https://www.npmjs.com/package/promptenhance
 - **GitHub**: https://github.com/itisrmk/promptenhance
 
 ---
+
+Built by Rahul / OpenClaw
