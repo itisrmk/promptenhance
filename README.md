@@ -150,6 +150,23 @@ printf '{"prompt":"fix it"}' | python3 .claude-plugin/hooks/user-prompt-submit/e
 If enhancement is needed, output includes `additionalContext`.
 If not needed, hook output stays pass-through.
 
+## 🧠 Visual confirmation inside Claude Code
+
+- Every enhanced run now includes a visible visual marker at the top of `additionalContext`:
+  - `🧠 [promptenhance — ENHANCED]`
+  - Trigger reason (`short_ambiguous`, `generic_short`, etc.)
+  - The original prompt preview
+- Toggle this with config:
+  - `show_visual`: true/false
+  - `visual_label`: custom label string
+
+You can also check the latest run status directly:
+
+```bash
+promptenhance status
+promptenhance status --tail 40
+```
+
 ## 🛠️ Troubleshooting
 
 - **`command not found: promptenhance`**
@@ -204,15 +221,20 @@ If not needed, hook output stays pass-through.
   "max_context_chars": 12000,
   "anthropic_enabled": false,
   "anthropic_model": "claude-3-5-haiku-latest",
-  "anthropic_max_tokens": 350
+  "anthropic_max_tokens": 350,
+  "show_visual": true,
+  "visual_label": "🧠 [promptenhance — ENHANCED]"
 }
 ```
 
 Supported env overrides:
 
 - `PROMPTENHANCE_ENABLED`
+- `PROMPTENHANCE_ENABLED`
 - `PROMPTENHANCE_ANTHROPIC_ENABLED`
 - `PROMPTENHANCE_MAX_CONTEXT_CHARS`
+- `PROMPTENHANCE_VISUAL`
+- `PROMPTENHANCE_VISUAL_LABEL`
 
 ---
 

@@ -38,6 +38,8 @@ def load_config(root: Path) -> Dict[str, Any]:
         "anthropic_model": "claude-3-5-haiku-latest",
         "anthropic_max_tokens": 350,
         "log_path": str(Path.home() / ".claude" / "promptenhance.log"),
+        "show_visual": True,
+        "visual_label": "🧠 [promptenhance — ENHANCED]",
     }
     cfg.update(_read_json(Path.home() / ".claude" / "promptenhance.json"))
     cfg.update(_read_json(root / ".claude" / "promptenhance.json"))
@@ -46,6 +48,12 @@ def load_config(root: Path) -> Dict[str, Any]:
         cfg["enabled"] = os.getenv("PROMPTENHANCE_ENABLED", "1").lower() not in {"0", "false", "no"}
     if os.getenv("PROMPTENHANCE_ANTHROPIC_ENABLED") is not None:
         cfg["anthropic_enabled"] = os.getenv("PROMPTENHANCE_ANTHROPIC_ENABLED", "0").lower() in {"1", "true", "yes"}
+    if os.getenv("PROMPTENHANCE_VISUAL") is not None:
+        cfg["show_visual"] = os.getenv("PROMPTENHANCE_VISUAL", "1").lower() not in {"0", "false", "no"}
+
+    if os.getenv("PROMPTENHANCE_VISUAL_LABEL") is not None:
+        cfg["visual_label"] = os.getenv("PROMPTENHANCE_VISUAL_LABEL")
+
     if os.getenv("PROMPTENHANCE_MAX_CONTEXT_CHARS"):
         try:
             cfg["max_context_chars"] = int(os.getenv("PROMPTENHANCE_MAX_CONTEXT_CHARS", "12000"))
@@ -121,7 +129,7 @@ def main() -> int:
             return 0
 
         context = collect_context(root)
-        additional = build_additional_context(prompt, context, cfg)
+        additional = build_additional_context(prompt, context, cfg, reason)
         additional = additional[: int(cfg.get("max_context_chars", 12000))]
         log_line(cfg, f"enhanced: {reason}, chars={len(additional)}")
         print(json.dumps(payload(additional), ensure_ascii=False))

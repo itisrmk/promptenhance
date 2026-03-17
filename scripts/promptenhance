@@ -13,6 +13,7 @@ usage() {
 Usage:
   promptenhance init [PATH] [--force]
   promptenhance verify [PATH]
+  promptenhance status [--tail N]
   promptenhance help
 
 Commands:
@@ -20,6 +21,7 @@ Commands:
          Works in empty directories by bootstrapping required plugin files.
          PATH defaults to current directory and can be any target project folder.
   verify  Run hook verification (same as make verify). PATH defaults to current dir.
+  status  Show recent local promptenhance hook run log entries.
   help    Show this help.
 USAGE
 }
@@ -146,6 +148,47 @@ cmd_init() {
   echo_info "Then start a Claude session and prompt normally."
 }
 
+cmd_status() {
+  local target="${PWD}"
+  local tail_n=20
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --tail)
+        tail_n="$2"
+        shift 2
+        ;;
+      --help|-h)
+        echo "Usage: promptenhance status [--tail N]"
+        return 0
+        ;;
+      *)
+        if [[ -d "$1" ]]; then
+          target="$1"
+          shift
+        else
+          echo_warn "ignoring unexpected arg: $1"
+          shift
+        fi
+        ;;
+    esac
+  done
+
+  local log_path
+  log_path="$target/.claude/promptenhance.log"
+  if [[ ! -f "$target/.claude/promptenhance.json" ]]; then
+    log_path="$HOME/.claude/promptenhance.log"
+  fi
+  if [[ ! -f "$log_path" ]]; then
+    echo_warn "No promptenhance log file found at: $log_path"
+    return 0
+  fi
+
+  echo_info "Recent promptenhance events (tail -n $tail_n):"
+  tail -n "$tail_n" "$log_path"
+}
+
+
 cmd_verify() {
   local target="${1:-$PWD}"
   if [[ -f "$target/Makefile" ]] && has_cmd make; then
@@ -163,6 +206,10 @@ case "${1-}" in
   verify)
     shift
     cmd_verify "$@"
+    ;;
+  status)
+    shift
+    cmd_status "$@"
     ;;
   help|--help|-h)
     usage
