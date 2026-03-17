@@ -188,22 +188,9 @@ make help
 
 ---
 
-## 📸 Screenshot / Demo
-
-Add a short gif or short terminal demo here:
-
-```bash
-# Example smoke
-printf '{"prompt":"fix it"}' | python3 .claude-plugin/hooks/user-prompt-submit/enhance.py
-```
-
----
-
 ## 📬 Links
 
 - **npm**: https://www.npmjs.com/package/promptenhance
 - **GitHub**: https://github.com/itisrmk/promptenhance
 
 ---
-
-Built by Rahul / OpenClaw
